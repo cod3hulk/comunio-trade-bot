@@ -8,6 +8,11 @@ class Bot:
         self.username = username
         self.password = password
 
+    def run(self):
+        self.login()
+        players = self.players()
+        self.placeOffer(players)
+
     def login(self):
         self.session = requests.Session()
         data = { 'login': self.username, 'pass': self.password }
@@ -18,7 +23,12 @@ class Bot:
         self.communityId = BeautifulSoup(r.text).find("input", {"name":"placedInCommunity"})["value"]
 
         r = self.session.get('http://www.comunio.de/rest/exchangeMarketService.php')
-        return json.loads(r.text)
+        players = json.loads(r.text)
+
+        return [player for player in players if self.shouldBuy(player)]
+
+    def shouldBuy(self, player):
+        return ((player['quotedPrice'] - player['recommendedPrice']) > 20000) and not player['bid']
 
     def placeOffer(self, players):
         for player in players:
@@ -37,8 +47,6 @@ class Bot:
         return "price[%s]" % player['playerId']
 
 
-def shouldBuy(player):
-    return ((player['quotedPrice'] - player['recommendedPrice']) > 20000) and not player['bid']
 
 def main():
     # parse commandline arguments
@@ -51,8 +59,6 @@ def main():
     bot.login()
     players = bot.players()
 
-    playersToBuy = [player for player in players if shouldBuy(player)]
-
-    bot.placeOffer(playersToBuy)
+    bot.placeOffer(players)
 
 main()
