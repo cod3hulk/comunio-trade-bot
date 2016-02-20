@@ -47,7 +47,6 @@ class Bot:
         return "price[%s]" % player['playerId']
 
 
-
 def main():
     # parse commandline arguments
     parser = argparse.ArgumentParser(description='Place comunio exchange offers automatically')
